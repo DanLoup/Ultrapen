@@ -13,10 +13,20 @@ nms = []
 nns = []
 nmsh = []
 nnsh = []
+if os.path.exists("./build/check.txt") == False:
+    f = open("./build/check.txt", mode='w', encoding='utf-8')
+    f.writelines(nms)
+    f.close()
+if os.path.exists("./build/checkh.txt") == False:
+    f = open("./build/checkh.txt", mode='w', encoding='utf-8')
+    f.writelines(nms)
+    f.close()
+
+
 if len(sys.argv)>1:
     if sys.argv[1]=="burn":
         print("burning everything to the ground")
-        f = open("check.txt", mode='w', encoding='utf-8')
+        f = open("./build/check.txt", mode='w', encoding='utf-8')
         f.writelines(nms)
         f.close()
     if sys.argv[1]=="buildupen":
@@ -27,7 +37,7 @@ if len(sys.argv)>1:
         os.chdir("../game/")
         os.system("../../tools/wla-z80 -o ./main.o ./main.s")
         os.system("../../tools/wlalink ./linkfile ../../disk/upen.bin")
-        sys.exit()
+        exit()
 
     if sys.argv[1]=="buildupenverb":
         print("building ultrapen verbosely")
@@ -37,11 +47,11 @@ if len(sys.argv)>1:
         os.chdir("../game/")
         os.system("../../tools/wla-z80 -v -o ./main.o ./main.s")
         os.system("../../tools/wlalink ./linkfile ../../disk/upen.bin")
-        sys.exit()
-    
+        exit()
+
     if sys.argv[1]=="runupen":
         os.system("./tools/openmsx-debugger & ./tools/openmsx -diska ./disk")
-        sys.exit()
+        exit()
 
 p = Path("./src/editor/")
 for fl in p.iterdir():
@@ -52,11 +62,11 @@ for fl in p.iterdir():
         nmsh.append(fl.name+"\n")
         nmsh.append(str(getmtime(fl))+"\n")
 
-f = open("check.txt", mode='r', encoding='utf-8')
+f = open("./build/check.txt", mode='r', encoding='utf-8')
 nns = f.readlines()
 f.close()
 
-f = open("checkh.txt", mode='r', encoding='utf-8')
+f = open("./build/checkh.txt", mode='r', encoding='utf-8')
 nnsh = f.readlines()
 f.close()
 
@@ -116,10 +126,10 @@ except Exception as e:
     for m in pistack:
         m.kill()
     exit()
-f = open("check.txt", mode='w', encoding='utf-8')
+f = open("./build/check.txt", mode='w', encoding='utf-8')
 f.writelines(nms)
 f.close()
-f = open("checkh.txt", mode='w', encoding='utf-8')
+f = open("./build/checkh.txt", mode='w', encoding='utf-8')
 f.writelines(nmsh)
 f.close()
 
