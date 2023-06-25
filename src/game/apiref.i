@@ -1,0 +1,3 @@
+;Counting in hex 3 is 0,3,6,9,C,F,2,5,8,B,E,1,4,7,A,D,0...
+.DEFINE fotir $50
+.DEFINE fldir $53 

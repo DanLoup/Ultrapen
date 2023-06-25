@@ -1,0 +1,180 @@
+0:64 (0.25) is most likely the gravity
+Jump starts at 4:128 (4.5)?
+
+Megaman walks at 1:64 (1.25), most likely no acceleration
+Dash is 2:128 (2.5)
+Shot goes at 4:0 (4.0)
+Scroll is 3
+
+32 sprites, 16x16 each
+32 bytes per sprite (16 rows,2 cols, 1 byte per row)
+1KB of data total
+color tables 512 bytes
+The thing actually supports 64 sprites, so SOME caching is probably possible
+
+Okay, lemme do a basic plan for a smarter sprite system
+
+First, outline what the functions must do:
+
+-CreateSprite:
+It must allocate a sprite slot (mirrored into the flicker buffer), fill it, then have the color table both on the main and sub tables, and finally it must find an available
+sprite graphics slot (there's 64 of em) and copy picture
+Then on the next frame, you update the sprite coordinates etc to show the newborn sprite
+
+-ChangeFrame:
+Update the color table of the next frame sprite, update the pixels then change the sprite data of the next frame to reflect it
+Then on the next frame, place the color table on the previous sprite and update it as well
+
+-FlipFrame:
+Same as above, but don't actually touch the color table, just update
+and update next
+
+-Okay, lets think tables:
+Slot (used/free and MAYBE update),x,y,count(total subsprites),width(used to loop sprites around),frame,mono/flip
+But that means that those pointer things etc need to be recalculated on the Changeframe/flip frame
+
+
+
+-For optimization purposes, i'm thinking on ditching the flexible sprite size, and just have four pre defined sizes
+1x1, 2x1,1x2 and 2x2. If i need more than that, i just use multiple sprites
+
+
+Lets plan memory!
+The whole cache thing goes from 4000 to 7fff, so let's call em 40-80
+I want to have 8KB free for the shared graphics (penguin, shots, H-fly/kick/jump), so need to squeeze what we have in 60-80
+level.i currently:
+4f jump list
+50-58 uncompressed tile maps 8
+58-5A Block config 2
+60-68 (the two pages of the frame buffer) 8
+
+sprite.i currently:
+70 object table
+71 Graphical jump table (?)
+72 object structure (??)
+73 (0-20) sprite used table, (20-40) Calculated pointers,(40-80) sprite offset table,(80-b0) flip table?
+74 actual sprite flipping table
+75 multiply by 96 table
+76 monocolor sprite table
+79 sprite cache (only the first 128 bytes) 
+
+shot.i currently:
+7A shot table 
+
+enemy.i currently:
+7B enemy table 
+
+Conclusions: Level.i should be better organized, sprite.i should lose some weight
+There's like 4KB being allocated for the frame buffers, which is probably twice what they actually use up, 1.5KB doing nothing after the block configs
+Other than that, we have 1.7KB left on the end of the block, and 3.8KB on the beginning
+As it stands (assuming fb is indeed not using all the 4KB), we have 9KB free on the whole block
+
+Lemme try to create a new map then:
+0-3f: main program (upen.bin)
+40-5f: Fixed penguin data (base.bin)
+
+level.i:
+60-68 fb (too many routines depend on this, so maybe it's not very wise to touch it) x
+68-70 uncompressed tile maps x
+sprite.i: (jeez, this thing should really thing up)
+7000-70E0 object table x
+70E0-70FF Sprite allocation table x
+71 Sprite jump table and allocation table x
+72 sprite flip table x
+73 sprite cache (only the first 128 bytes) x
+shot.i:
+74 shot table x
+enemy.i:
+75 enemy table x
+effects:
+76 effects
+77-7F free (9 tables, 2.5KB free for the game code, quite a bit)
+
+That map was nice and all, but i think i can do better:
+level.i:
+60-68 fb (too many routines depend on this, so maybe it's not very wise to touch it) x
+68-70 uncompressed tile maps x
+sprite.i: (jeez, this thing should really thing up)
+7000-70E0 object table x
+70E0-70FF Sprite allocation table x
+71 Sprite jump table and allocation table x
+72 sprite flip table x
+73 sprite cache (only the first 128 bytes) x
+object.i:
+74-75 object/Program table
+Maybe each program should have 32 bytes, which gets initialized with: X,Y and the 4 byte parameters
+
+
+Hey, c0-ef is game, all MSX computer disk drives seem to not touch those memory areas
+So i did put the stack at efff
+
+
+Todo:
+-Fix autojump
+-Fix pot hitbox
+-Fix sprite disappearing
+-Fix pot easykill
+-Fix sprite disappear on left
+-Fix stairs fastdrop (happens because the stairs engine NEVER reset the pen vector)
+-Fix wrapshot
+-Fix rough stair pop ups
++Improve stairs exit offsets and also the part where pdir don't get updated correctly (pdir got fixed by magic, can't exactly make the exit dead center as this causes awful camera pop)
+-Fix out of bound glitch where the knock back gets the penguin inside the wall (it was a bug where movement to the right does not count if was at subpixel scale)
+-Add stairs butt mode
+-Add stairs shooting
+-Add changing future direction on stairs
+-Fix being able to up arrow into the stairs when on top of em
+-Fix the horrifying case of the scroll up not working because the butt mode essentially breaks how pen_y works (create an "alt y" mode maybe, probably will be useful with hiroshi as well)
+-Fix pan mismatch
++Fix pan weird duplicate when scrolling up (i can't see it happening anymore for some reason)
+-Fix stairs not walking on top
+-Fix the pan ender writing the wrong tiles to the buffer when coming from up to left specially
+-Fix death
+-The "pan back other screen detector" need to be a LOT smarter, and able to correctly determine which screen to be filled and with what, because as it stands, its not working correctly at all (phew, that one was hard)
+-Guess what? more pan shit. WHen getting into a pan after dying, the picture is from the scene you died, not last screen
+-Add slide
+-Add MSX 2+ support
+-Fix MSX 2+ end pan thing (took quite a while on this one, due how i had to basically redo how the pan counts)
+-Fix the stairs jump out thing again (was quite easy)
+-Add fade in fade out
+-Add effects API
+-Add smoke on hit, blowing balls, Enemy pop out
+-Add death
+-Add big boss mode
+Make knockback make sense
++See if you can make the bootloader actually boot on all machines (now only Acid2 fails)
++Fix rare bug where walking animation gets broken by getting hit (now the stair exit deinitalizes correctly regardless of who kicked it out)
+Optimize frame sender
+Clean code
+
+
+
+***** Dont forget to port all the ins and outs to the vdpreg/vdpmem as at the moment it's not in the MSX standard *********
+
+Game things.
+Boss/level ideas:
+Mask Pen (Kabuki level/boss, need to think on a nice attack for it)
+Coin Pen (Koban/cat/ninja inspired level/boss)
+Fan Hen (Air level, boss use fans to actually fly but fall when tosses em)
+Ink pen (giant brush pen,Level is drawn ,kinda like ranma 1/2)
+Ghost pen (Spooky level, possibly fire penguin?)
+Salary Pen (office level, with exploding xerox machines and death plug traps)
+Torch Pen (Literally a welder penguin on a factory level)
+Para Pen (Umbrella boss, maybe a beach/water level)
+Dragon/Suit/Drum Pen? (Festival level?That could be the fire pen)
+Change Pen (Sentai inspired level? could have it be a city level that ends in a rockthing with fake small buildings?)
+Fight Pen? (a Sumo pen, could be the larger of the crowd)
+
+-Fake plaques of enemies and spikes
+-rail (and hole) to install boss doors
+-Fresh concrete trap hole
+
+
+I need a good video memory map:
+00-20 tiles
+20-40 color tiles
+40-44/44-48 tilemaps (double buffered?)
+50-5A sprite tiles
+4A-50/5A-60 sprite attribute tables (alternates for sprite flickering purposes)
+
+so, we're using 00-60 out of 00-1FF lol

@@ -1,0 +1,6 @@
+acid1test (broke it)
+acid2test (reboots)
+Sony HB-F9P Russian (A and S don't work due rusky keyboard, should maybe alias the control to space-ctrl)
+
+
+Apparently i can't just access $98 directly because the MSX standard forbids that, so i need to fetch it from 7

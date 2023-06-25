@@ -1,0 +1,5 @@
+-Start to add the gui stuff for the level compiler (was just a matter of changing a gui item lol)
+Add block types (air/floor/stairs/instakill etc) to the tile editor
+Check the whole -1 tiles situation
+Try to make the code a bit less ugly and/or remove useless code
+design the whole "binary inclusion" thing

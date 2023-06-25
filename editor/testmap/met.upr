@@ -1,0 +1,175 @@
+;ix is: 0 type, 1 level pos id, 2-3 x,4 y, 5-8 input values
+ld a,$80 ;This gets run with b as $80 everytime a new instance is called
+cp b
+jp nz,runprogram
+ld a,$ff ;And you must respond 0 to 'yep, give me some memory', or $ff for do not allocate
+ret ;you can use it to make a one shot thing
+;you also get the program parameters in ix if you need to check things such as if its the same
+;or get parameters for one shot functions
+runprogram:
+ld a,(ix + 5)
+cp 0
+jp nz,staf
+	ld l,MET_GFX
+	ld d,(ix + 2) ;X
+	ld e,(ix + 4) ;Y
+	ld bc,0
+	call CreateSprite
+	ld (ix + 5),a
+staf:
+
+ld l,(ix + 2)
+ld h,(ix + 3)
+call GetScreenCoord
+ld d,a
+ld (ix + 7), d ;Storing the local position for uses later on
+ld a,b
+cp 0
+jp nz,@end
+ld e,(ix + 4)
+ld c,(ix + 5)
+push de
+call MoveSprite
+pop hl
+ld de, $1010
+ld c,$10
+call QueryDots
+cp 255
+jp nz,@kend
+
+ld a,(ix + 6)
+inc a
+ld (ix + 6),a
+cp 4
+jp nz,@deframe
+ld a,0
+ld (ix + 6),a
+
+ld d,(ix + 7)
+ld hl,$101
+ld a,(hl)
+add a,8 ;its not centralized
+sub d
+jp nc,@abs
+	xor 255
+@abs:
+cp 100
+ld a,(ix + 8)
+jp c,@nolower
+	ld a,62 ;If the penguin is far, reset pot
+@nolower:
+inc a
+cp 64
+jp nz,@noclear
+	ld a,0 ;End of loop
+@noclear:
+
+ld (ix + 8),a
+ld d,0
+
+cp 32
+jp c,@set
+	ld d,2
+@set:
+ld a,d
+ld b,(ix + 9)
+cp b
+jp z,@diff
+	ld d,1
+@diff:
+ld (ix + 9),a
+
+ld a,(ix + 10)
+ld (ix + 10),d
+cp d
+jp z,@nonewframe
+
+ld e,0
+ld c,(ix + 5)
+call SetFrameFlip
+@nonewframe:
+
+
+ld a,(ix + 8)
+cp 8
+jp nz,@nospawnshot
+
+	ld a,(ix + 7)
+	ld (shottbl+2),a
+	ld a,(ix + 4) ;Position
+	ld (shottbl+3),a
+
+
+	ld hl,shottbl
+	call SpawnProgram	
+	push hl
+	pop iy
+	ld a,255
+	ld (iy + 10),a ;X speed
+	ld hl,$0020
+	ld (iy + 11),h ;Y speed
+	ld (iy + 12),l
+
+	ld hl,shottbl
+	call SpawnProgram	
+	push hl
+	pop iy
+	ld a,255
+	ld (iy + 10),a ;X speed
+	ld hl,$ffA0
+	ld (iy + 11),h ;Y speed
+	ld (iy + 12),l
+
+	ld hl,shottbl
+	call SpawnProgram
+	push hl
+	pop iy
+	ld a,255
+	ld (iy + 10),a ;X speed
+	ld hl,$ff30
+	ld (iy + 11),h ;Y speed
+	ld (iy + 12),l
+
+@nospawnshot:
+
+
+@deframe:
+
+@noinitshot:
+
+ret
+@kend: ;Kill the dot?
+ld e,a
+ld a,(ix + 8)
+cp 32
+jp c,@nokill
+	ld b,$fe
+	call ChangeDot
+	ret
+@nokill:
+
+ld b,$ff
+call ChangeDot
+
+ld a,0
+ld e,0
+ld c,(ix + 2)
+ld b,(ix + 3)
+ld d,(ix + 4)
+push bc
+push de
+call AddEffect ;A effect ID , bc X pos (16bit), D Y pos, E flip
+pop de
+pop bc
+ld e,8
+call AddItem ;bc X pos (16bit), D Y pos, e max item value
+
+
+@end:
+	ld a,255
+	ld (ix + 0),a ;Program ended
+	ld c,(ix + 5)
+	call RemoveSprite ;Shot done, remove sprite
+ret
+shottbl: 
+.db 8,16,80,80,MET_SHOT_GFX
