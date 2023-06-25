@@ -1,2 +1,2 @@
-You need wlalink, wla-z80, openmsx and openmsx-debugger on this folder to get it to build and test vscode
+You need wlalink, wla-z80, openmsx and openmsx-debugger on this folder to get it to build and test in vscode
 

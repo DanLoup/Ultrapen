@@ -512,7 +512,7 @@ void MusicSet::Run(int status){
 	for (int a = 0; a < 40;a++){
 		color cc = color(24,24,24);
 		if ((a & 3)==3){cc=color(48,48,48);}
-		if ((a & 15)==15){cc=color(128,128,128);}
+		if ((a & 15)==15){cc=color(96,96,96);}
 
 		Line(ivec2(96+a*24,140),ivec2(96+a*24,140+360),cc);
 	
