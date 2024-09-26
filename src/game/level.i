@@ -83,7 +83,8 @@ LoadLevel:
 
 	ld c,$99 ;Load the 1 bit bitmap data to the 3 tile maps 
 	ld hl,$4000 
-	ld e,4
+	ld e,6
+
 	LLoop1:
 		push hl
 		out (c),l

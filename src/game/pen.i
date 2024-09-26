@@ -1110,6 +1110,7 @@ penshot:
 		ld de,(CamX)
 		sbc hl,de
 		ld bc,(pentmp+4)
+
 		ld a,(pdir)
 		cp 1
 		jp z,pshotleft
@@ -1126,7 +1127,7 @@ penshot:
 		jp z,@nocoin1l
 			ld b,1
 		@nocoin1l:
-		
+
 		ld ix,protable		
 		ld a,8 ;Shot, with bootstrap
 		ld (ix+0),a

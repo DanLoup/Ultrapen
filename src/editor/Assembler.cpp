@@ -50,7 +50,7 @@ std::string generic(std::string in,std::string let){
 	return ret;
 }
 
-void ProgramFile::Boot(){
+void ProgramFile::Boot(bool newf){
 	aswin=new Window(rd,50,ivec2(0,60),ivec2(1024,600));
 	aswin->AddControl("Textin",Control::EPICTURE,ivec2(5,5),ivec2(990,400));
 	aswin->AddControl("Scroll",Control::SCROLL,ivec2(990,5),ivec2(26,400));

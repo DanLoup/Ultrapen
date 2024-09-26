@@ -9,7 +9,7 @@ void LoadBMP();
 void SaveBMP();
 fb fbs[3];
 
-void BGtileF::Boot(){
+void BGtileF::Boot(bool newf){
 	tiwin=new Window(rd,50,ivec2(0,60),ivec2(1024,600));
 	tiwin->AddControl("sc1",Control::SCROLL,ivec2(420+256+8,16),ivec2(20,256+8));
 	tiwin->AddControl("sc2",Control::SCROLL,ivec2(120+256+8,16+280),ivec2(20,256+8));
@@ -31,7 +31,18 @@ void BGtileF::Boot(){
 	for (int a=0;a<4;a++){
 		penmode[a]->setValue(2,a);
 	}
+	if (newf){
+		for (int a = 0; a < 512;a++){
+			for (int b=0;b < 256;b++){
+				tiles[a].pix[b]=0;
+			}
+			for (int b=0;b < 4;b++){
+				groups[a].box[b]=0;
+				clusters[a].box[b]=0;
+			}
 
+		}
+	}
 }
 
 void BGtileF::Run(int status){
@@ -373,7 +384,7 @@ void BGtileF::RepaintTextures(){
 			int cur=a+((b+sc)*8);
 			if (cur<=tict){
 				tiles[cur].draw(&fbs[0],ivec2(a*8,b*8));
-			}else{
+			}else{https://youtu.be/CfTsvWTtoiQ
 				tiles[cur].fill(&fbs[0],ivec2(a*8,b*8),color(64,64,64));
 			}
   		}
@@ -444,7 +455,10 @@ int BGtileF::Encode(unsigned char * data){
 void BGtileF::Decode(unsigned char * data){
 	DH dat;dat.data=data;dat.pos=0;
 	tict=dat.rshort();grct=dat.rshort();clct=dat.rshort();
-	for (int a=0;a<512;a++){memset(tiles[a].pix,0,64);tiles[a].tilesiz = ivec2(8,8);}
+	for (int a=0;a<512;a++){
+		memset(tiles[a].pix,0,64);tiles[a].tilesiz = ivec2(8,8);
+		for (int b=0; b <4;b++){clusters[a].box[b]=0;groups[a].box[b]=0;}
+	}
 	for (int a=0;a<tict+1;a++){
 		for (int b=0;b<64;b++){tiles[a].pix[b]=dat.rbyte();}
 	}

@@ -894,6 +894,12 @@ shot_normal:
 		ld (shlimits),a
 		cp 4
 		jp nc,@terminate
+		ld a,0
+		ld c,0
+		ld d,$ff ;No loop
+		ld hl,sfx_shoot
+		call set_channel_sound
+
 
 		ld hl,$01
 		ld d,(ix + 3) ;X

@@ -13,7 +13,7 @@ int spmask[]={SDLK_UP,SDLK_RIGHT,SDLK_DOWN,SDLK_LEFT,SDLK_DELETE,SDLK_INSERT,SDL
 int moudbct=0;
 bool running=true;
 void setWindowsIcon(SDL_Window *sdlWindow);
-
+void RunAudio();
 
 int main( int argc, char * argv[] ){
 	SDL_Init(SDL_INIT_VIDEO || SDL_INIT_AUDIO);
@@ -92,6 +92,7 @@ int main( int argc, char * argv[] ){
 		RunWindows();
 		RunKeyboard();
 		SDL_RenderPresent(rd);
+		RunAudio();
 		
 	}
 	SDL_DestroyRenderer(rd);

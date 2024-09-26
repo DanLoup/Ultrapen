@@ -18,7 +18,7 @@ int bmfilemode=0,bmwi=0,bmhe=0,bmbytes=0;
 unsigned char bitmem[4000000];
 bool bmdone=false;
 
-void FileType::Boot(){
+void FileType::Boot(bool newf){
 
 }
 void FileType::Run(int status){
@@ -545,4 +545,42 @@ std::string ucaser(std::string in){
 		out+=nu;
 	}
 	return out;
+}
+
+void SavePal(std::string thisfile){
+	int pos=thisfile.size();
+	for (int a = thisfile.size();a>0;a--){
+		if (thisfile[a]=='/' || thisfile[a]=='\\'){pos=a;break;}
+	}
+	std::string tex=thisfile.substr(0,pos)+"/palette.pal";
+	FILE * f = fopen(tex.c_str(),"wb");
+	unsigned char rc,gc,bc,ac;
+	if (f){
+		for (int a = 0; a <16;a++){
+			for (int b = 0; b <16;b++){
+				rc=pals[a].col[b].r;gc=pals[a].col[b].g;bc=pals[a].col[b].b;ac=pals[a].col[b].a;
+				fwrite(&rc,1,1,f);fwrite(&gc,1,1,f);fwrite(&bc,1,1,f);fwrite(&ac,1,1,f);
+			}
+		}
+		fclose(f);
+	}
+
+}
+void LoadPal(std::string thisfile){
+	int pos=thisfile.size();
+	for (int a = thisfile.size();a>0;a--){
+		if (thisfile[a]=='/' || thisfile[a]=='\\'){pos=a;break;}
+	}
+	std::string tex=thisfile.substr(0,pos)+"/palette.pal";
+	FILE * f = fopen(tex.c_str(),"rb");
+	unsigned char rc,gc,bc,ac;
+	if (f){
+		for (int a = 0; a <16;a++){
+			for (int b = 0; b <16;b++){
+				fread(&rc,1,1,f);fread(&gc,1,1,f);fread(&bc,1,1,f);fread(&ac,1,1,f);
+				pals[a].col[b].r=rc;pals[a].col[b].g=gc;pals[a].col[b].b=bc;pals[a].col[b].a=ac;
+			}
+		}
+		fclose(f);
+	}
 }

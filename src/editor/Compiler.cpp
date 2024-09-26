@@ -189,7 +189,7 @@ std::string Compile() {
 		}
 	}
 
-	addrs[5] = lk.pos;
+	addrs[5] = lk.pos; //Building programs
 	int pr = 0;
 	for (int a = 0; a < cts->files.size(); a++) {if (cts->files[a]->typ == FileType::FT_PROGRAMSET) {pr++;}}
 	lk.wbyte(pr);
@@ -210,6 +210,81 @@ std::string Compile() {
 
 		}
 	}
+	addrs[6] = lk.pos; //Building instruments
+
+	for (int a = 0; a < cts->files.size(); a++) {
+		if (cts->files[a]->typ == FileType::FT_INSTRUMENTSET) {
+			InstrumentSet* is = (InstrumentSet*)cts->files[a];
+			debtx += "Adding instruments:"; debtx += cts->files[a]->name;debtx += "|";
+			//lk.wbyte(is->insts.size());			
+			int addrp=lk.pos+(is->insts.size()*2)+0x8400;
+			for (int a = 0; a < is->insts.size();a++){
+				lk.wshort(addrp);
+				addrp+=(is->insts[a].ramps.size()*4)+3;
+			}
+			//numblocks: ivol/rampsize,ipitch,vpitch(signed),vvol & audio (1) & noise (2) 
+			//Size could be multiplied by 4, so i think i will divide by 4 here just to pack
+			is->insts[0].sccramp=0x12;
+			is->insts[1].sccramp=0x34;
+
+			for (int b = 0;b < is->insts.size();b++){
+				lk.wbyte(is->insts[b].sccramp| 128);//config bytes go first
+				//Also i set the bit as 128 to tell ultrapen that the instrument size is supposed to be multiplied by 2
+				lk.wbyte((is->insts[b].loopini & 15)+((is->insts[b].looppt & 15)*16));
+				lk.wbyte(is->insts[b].ramps.size());//As the standard read the number of ramps)
+				for (int c=0;c <is->insts[b].ramps.size();c++){
+					//Tudo errado em baixo ,mas porque você esqueceu como funciona
+					//o ivol deveria ser 0-15
+					//e o vvol é o vetor feito por divisão de ivol,vvol
+					//dividir o tamanho por 4 não parece muito esperto porque tem que multiplicar depois
+					//E isso tira a precisão pra efeitos sonoros como o tiro do ultrapen
+					lk.wbyte(((is->insts[b].ramps[c].ivol) & 240)+((int(is->insts[b].ramps[c].rsize/2)) & 15));
+					lk.wbyte(is->insts[b].ramps[c].ipitch);
+					lk.wbyte(is->insts[b].ramps[c].vpitch);
+					int divi = ((int(is->insts[b].ramps[c].rsize))+1);
+					char vec = (is->insts[b].ramps[c].vvol-is->insts[b].ramps[c].ivol)/divi;
+					lk.wbyte((vec & (255-3))+is->insts[b].ramps[c].type);
+				
+				
+				}
+			}
+		}
+	}
+	addrs[7] = lk.pos; //Building Songs
+	for (int a = 0; a < cts->files.size(); a++) {
+		if (cts->files[a]->typ == FileType::FT_MUSICSET) {
+			MusicSet* ms = (MusicSet*)cts->files[a];
+			debtx += "Adding song:"; debtx += cts->files[a]->name;debtx += "|";
+			lk.wbyte(ms->songs.size());
+			for (int b = 0; b < ms->songs.size();b++){
+				ms->BuildMusic(b);
+				int site=0;
+				if (ms->songs[b].bpm==0){ms->songs[b].bpm=150;}
+				float rabpm=(ms->songs[b].bpm * 4); //4/4
+				//BPM é determinado por 256/bpm*4
+				//Quando dá overflow, o tempo passou
+				rabpm /= 60;//BPM = BPS
+				rabpm = 60/rabpm;
+				int bpl = 65536/rabpm;
+				lk.wshort(bpl); 
+				
+				for (int c = 0; c < 6;c++){
+					lk.wshort(site); //Generate a jump table of sorts
+					site+=ms->songs[b].bakemusic[c].bt.size()*2;
+				}
+				for (int c = 0; c < 6;c++){
+					for (int d = 0; d < ms->songs[b].bakemusic[c].bt.size();d++){
+						lk.wbyte(ms->songs[b].bakemusic[c].bt[d].e1);
+						lk.wbyte(ms->songs[b].bakemusic[c].bt[d].e2);
+					}
+				}
+			}
+		}
+	}
+	
+	
+
+
 	for (int a = 0; a < 16; a++) {
 		lk.data[(a * 2)] = addrs[a] & 255;
 		lk.data[(a * 2)+1] = (addrs[a]/256) & 255;

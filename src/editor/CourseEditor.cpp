@@ -18,7 +18,7 @@ SDL_Texture * cbuffers[2];
 fb efbs[4];
 bool loadedbuffs=false;
 
-void LVFile::Boot(){
+void LVFile::Boot(bool newf){
 	cowin=new Window(rd,50,ivec2(0,60),ivec2(1024,600));
 	subblo=new Window(rd,50,ivec2(0,60),ivec2(1024,600));
 	subobj=new Window(rd,50,ivec2(0,60),ivec2(1024,600));
@@ -393,12 +393,11 @@ void LVFile::ReloadFiles(){
 		if (files[a]->typ == FileType::FT_TILESET) { delete static_cast<BGtileF*>(files[a]); }
 		if (files[a]->typ == FileType::FT_OBJECTSET) { delete static_cast<OBtileF*>(files[a]); }
 	}
-	
 	filt[0].label = "Upen Files"; filt[0].all = false;
 	filt[0].extens.clear(); filt[0].extens.push_back(".utl"); filt[0].extens.push_back(".uob"); filt[0].extens.push_back(".ulv"); filt[0].extens.push_back(".upr");
+	filt[0].extens.push_back(".uis");filt[0].extens.push_back(".uss");
 	filtct = 1; 
 	files.clear();
-	//files.push_back(basegfx);
 	int pos = fpath.rfind('/');
 	int opos = fpath.rfind('\\');
 	if (opos > pos) { pos = opos; }
@@ -410,8 +409,7 @@ void LVFile::ReloadFiles(){
 		std::vector <mapel> oldmap = blomap;
 		blomap.clear();
 		tiles.clear();groups.clear();clusters.clear();
-		objgfx.clear();
-		macros.clear();
+		objgfx.clear(); macros.clear();
 		for (int a = 0; a < df.size(); a++) {
 			strcpy(fairu, odir); strcat(fairu, "/"); strcat(fairu, df[a].fname);
 			if (LoadFile(fairu, df[a].fname,true)) {
@@ -494,6 +492,7 @@ void LVFile::ReloadFiles(){
 			FillIcon(&programs.back());
 		}
 	}
+
 	//"ultrapen","powerup","set exit","set palette"
 	for (int a = 0; a < 16; a++){
 		programs.push_back(prgtpl());programs.back().trueid = a;
@@ -660,10 +659,10 @@ void LVFile::Decode(unsigned char* data) {
 	if (ext > 0){
 	for (int a = 0; a < 16; a++){
 		for (int b = 0; b < 16; b++){
-			pals[a].col[b].r = dat.rbyte();
-			pals[a].col[b].g = dat.rbyte();
-			pals[a].col[b].b = dat.rbyte();
-			pals[a].col[b].a = dat.rbyte();
+			//pals[a].col[b].r = dat.rbyte();
+			//pals[a].col[b].g = dat.rbyte();
+			//pals[a].col[b].b = dat.rbyte();
+			//pals[a].col[b].a = dat.rbyte();
 		}
 	}
 

@@ -47,7 +47,7 @@ struct FileType{
 	ftt typ;
 	virtual int Encode(unsigned char * data);
 	virtual void Decode(unsigned char * data);
-	virtual void Boot();
+	virtual void Boot(bool newf);
 	virtual void Run(int status);
 };
 
@@ -69,7 +69,7 @@ struct BGtileF : FileType{
 	int Encode(unsigned char * data);
 	void Decode(unsigned char * data);
 	BGtileF(){for (int a = 0;a < 512;a++){tiles[a].tilesiz = ivec2(8,8);}}
-	void Boot();
+	void Boot(bool newf);
 	void Run(int status);
 	void HandlePaint();
 	void HandleTiles();
@@ -101,7 +101,7 @@ struct OBtileF : FileType{
 			memset(objs[a].frames, 0, 256); sprintf(objs[a].name, "Obj%i", a);
 		}
 	}
-	void Boot();
+	void Boot(bool newf);
 	void Run(int status);
 
 	Control *lsobj,*fwobj,*obtype,* namebox,*obsize,*multicolor,*framesc,*tilesc,*objmenu,*numfra,*penmodo[5],*delobj;
@@ -155,29 +155,69 @@ struct ProgramFile : FileType {
 	std::string nameclip;
 	int Encode(unsigned char* data);
 	void Decode(unsigned char* data);
-	void Boot();
+	void Boot(bool newf);
 	void Run(int status);
 	Window * aswin;
 
 };
 
 struct note{
-	int pitch,volume,instrument,size;
+	int pitch,volume,instrument,size,pos;
 	int cmd;
+};
+
+struct bakecmd{
+	int e1=0,e2=0,e3=-1;
+	bakecmd(){};
+	bakecmd(int ee1,int ee2){e1=ee1;e2=ee2;e3=-1;}
+	bakecmd(int ee1,int ee2, int ee3){e1=ee1;e2=ee2;e3=ee3;}
+};
+
+struct bakemuschannel{
+	std::vector<bakecmd> bt;
+};
+
+struct track_nt{
+	int note=0,oct=2,duration=1,inst=0;
+};
+
+struct track{
+	std::vector<track_nt> notes;
+	std::string name;
+	int size=0;
+};
+
+struct tl_entry{
+	int start=0,size=0,track=0,lane=0;
 };
 
 struct song{
 	std::vector<note> notes;
+	bakemuschannel bakemusic[6];
 	int bpm;
+	int bakesize=0;
+	std::vector<track> tracks;
+	std::vector<tl_entry> time_ent;
 };
+
 struct MusicSet : FileType{
 	std::vector <song> songs;
 	int Encode(unsigned char* data);
 	void Decode(unsigned char* data);
-	void Boot();
+	void Boot(bool newf);
 	void Run(int status);
+	void BuildMusic(int mus);
+	void BuildTrack(int mus,int track);
 	Window * aswin;
 	int ms;
+	int bake_note_pos[6];
+	int bake_note_mpos[6];
+	int bake_note_instr[6];
+
+};
+
+struct Ramp{
+	int ivol,vvol,ipitch,vpitch,rsize,type; //0 = square,1 noise, 2 triangle
 };
 
 struct instrument{
@@ -190,12 +230,15 @@ struct instrument{
 	int effect,effpar[3]; //I decided to use fixed programmed effects instead
 	int fl_repeat; //Means it will keep looping the adsr
 	int data[32]; //Used by SCC and possibly OPLL 
+	std::vector <Ramp> ramps;
+	int sccramp;
+	int loopini,looppt;
 };
 struct InstrumentSet : FileType{
 	std::vector <instrument> insts;
 	int Encode(unsigned char* data);
 	void Decode(unsigned char* data);
-	void Boot();
+	void Boot(bool newf);
 	void Run(int status);
 	void Update();
 	Window * aswin;
@@ -239,7 +282,7 @@ struct LVFile : FileType {
 	bool outdated;
 	int Encode(unsigned char* data);
 	void Decode(unsigned char* data);
-	void Boot();
+	void Boot(bool newf);
 	void Run(int status);
 	void remap(std::vector<mapel> newblo);
 	void FillIcon(prgtpl * pr);
@@ -260,6 +303,9 @@ extern UObject uobs[128];
 
 extern std::vector <FileType*> fils;
 extern int curfile;
+
+void SavePal(std::string thisfile);
+void LoadPal(std::string thisfile);
 
 
 void DecodeLevel(unsigned char * data,int old);

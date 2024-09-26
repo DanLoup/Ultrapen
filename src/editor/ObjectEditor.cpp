@@ -5,7 +5,7 @@ void LoadBMP();
 void SaveBMP();
 
 int curobj=0,curtile=0,curfrtile=0,curframe=0;
-void OBtileF::Boot(){
+void OBtileF::Boot(bool newf){
 	obwin=new Window(rd,50,ivec2(0,60),ivec2(1024,600));
 	lsobj=new Control(obwin,Control::BUTTON,ivec2(100,20+380),ivec2(20,20));lsobj->SetText("<");
 	fwobj=new Control(obwin,Control::BUTTON,ivec2(100+100,20+380),ivec2(20,20));fwobj->SetText(">");

@@ -46,7 +46,7 @@ boot:
 	;call AddSpritePointers
 
 	call LoadLevel
-
+	call boot_music_driver
 
 	ld a,(vdpreg)
 	ld c,a
@@ -886,6 +886,8 @@ LoadNewBase:
 ret
 
 music:
+	call run_music_driver
+	
 ret
 
 copybase:
@@ -1193,11 +1195,7 @@ ret
 .include "object.i"
 .include "pen.i"
 .include "mem.i"
-;.include "shot.i"
-;.include "enemy.i"
-;.include "effects.i"
-;.include "bigboss.i"
-
+.include "psgdrv.i"
 fontdt: .incbin "font.bin"
 
 ;return [expr {[set [get_active_cpu]_freq]} * [machine_info time]]

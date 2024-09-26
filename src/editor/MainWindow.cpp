@@ -123,6 +123,7 @@ void RunWindows(){
                     	if (fib[a]=='/'){fib[a]=0;break;}if (fib[a]=='\\'){fib[a]=0;break;}
                 	}
 				}
+				LoadPal(outfile);
 			}
 		
 			if (filemode==2){
@@ -147,6 +148,8 @@ void RunWindows(){
                     	if (fib[a]=='/'){fib[a]=0;break;}if (fib[a]=='\\'){fib[a]=0;break;}
                 	}
 				}
+				SavePal(outfile);
+
 			}
 		}
 
@@ -184,11 +187,11 @@ void RunWindows(){
 				fils.push_back(fileoutld);
 				curfile = fils.size() - 1;
 				//if (fileoutld->typ == FileType::FT_OBJECTSET) { LoadObjControls(); }
-				fils.back()->Boot();
+				fils.back()->Boot(false);
 			}
             filemode=0;
 			redomenu = true;
-
+			LoadPal(outfile);
 		}
 		if (filemode==2){
 			int old=0,valid=0;
@@ -213,6 +216,7 @@ void RunWindows(){
 			}
 			gotfile=false;
             filemode=0;
+			SavePal(outfile);
 		}
 
 		LoadCourseControls();
@@ -262,7 +266,7 @@ void RunWindows(){
 			newfil->typ=(FileType::ftt)newfitp;
 			newfil->named=false;
 			fils.push_back(newfil);
-			fils.back()->Boot();
+			fils.back()->Boot(true);
 		}
 		if (newfitp==FileType::FT_OBJECTSET){
 			OBtileF * newfil=new OBtileF();
@@ -270,7 +274,7 @@ void RunWindows(){
 			newfil->typ=(FileType::ftt)newfitp;
 			newfil->named=false;
 			fils.push_back(newfil);
-			fils.back()->Boot();
+			fils.back()->Boot(true);
 		}
 		if (newfitp==FileType::FT_LEVEL){
 			LVFile * newfil=new LVFile();
@@ -278,7 +282,7 @@ void RunWindows(){
 			newfil->typ=(FileType::ftt)newfitp;
 			newfil->named=false;
 			fils.push_back(newfil);
-			fils.back()->Boot();
+			fils.back()->Boot(true);
 		}
 		if (newfitp==FileType::FT_PROGRAMSET){
 			ProgramFile * newfil=new ProgramFile();
@@ -286,7 +290,7 @@ void RunWindows(){
 			newfil->typ=(FileType::ftt)newfitp;
 			newfil->named=false;
 			fils.push_back(newfil);
-			fils.back()->Boot();
+			fils.back()->Boot(true);
 		}
 		if (newfitp==FileType::FT_MUSICSET){
 			MusicSet * newfil=new MusicSet();
@@ -294,7 +298,7 @@ void RunWindows(){
 			newfil->typ=(FileType::ftt)newfitp;
 			newfil->named=false;
 			fils.push_back(newfil);
-			fils.back()->Boot();
+			fils.back()->Boot(true);
 		}
 
 		if (newfitp==FileType::FT_INSTRUMENTSET){
@@ -303,7 +307,7 @@ void RunWindows(){
 			newfil->typ=(FileType::ftt)newfitp;
 			newfil->named=false;
 			fils.push_back(newfil);
-			fils.back()->Boot();
+			fils.back()->Boot(true);
 		}
 
 		newfi=false;

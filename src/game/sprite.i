@@ -995,7 +995,7 @@ VramColorTileMode:
 	;ld c,a
 	;HL source, DE destination, A count (this solution is just not very optimal at all lol)
 	;iyl precalculated copy weight (again)
-	call 5
+	;call 5
 	ld a,(genspr+9)
 	and 32
 	jp z,@vramcol1
